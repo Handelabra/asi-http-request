@@ -4436,12 +4436,18 @@ static NSOperationQueue *sharedQueue = nil;
 	}
 	// Borrowed from http://stackoverflow.com/questions/2439020/wheres-the-iphone-mime-type-database
 	CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (CFStringRef)[path pathExtension], NULL);
-    CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass (UTI, kUTTagClassMIMEType);
-    CFRelease(UTI);
-	if (!MIMEType) {
+	CFStringRef MIMEType = UTTypeCopyPreferredTagWithClass (UTI, kUTTagClassMIMEType);
+	if (UTI != NULL) {
+		CFRelease(UTI), UTI = NULL;
+	}
+	if (MIMEType == NULL) {
 		return @"application/octet-stream";
 	}
-    return NSMakeCollectable([(NSString *)MIMEType autorelease]);
+	else {
+		NSString * result = [[(NSString *)MIMEType copy] autorelease];
+		CFRelease(MIMEType), MIMEType = NULL;
+		return result;
+	}
 }
 
 #pragma mark bandwidth measurement / throttling
