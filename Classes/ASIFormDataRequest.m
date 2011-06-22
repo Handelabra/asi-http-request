@@ -30,11 +30,16 @@
 #pragma mark utilities
 - (NSString*)encodeURL:(NSString *)string
 {
-	NSString *newString = NSMakeCollectable([(NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)string, NULL, CFSTR(":/?#[]@!$ &'()*+,;=\"<>%{}|\\^~`"), CFStringConvertNSStringEncodingToEncoding([self stringEncoding])) autorelease]);
-	if (newString) {
-		return newString;
+	CFStringRef newCFString = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)string, NULL, CFSTR(":/?#[]@!$ &'()*+,;=\"<>%{}|\\^~`"), CFStringConvertNSStringEncodingToEncoding([self stringEncoding]));
+
+	if (newCFString == NULL) {
+		return @"";	
 	}
-	return @"";
+
+	CFMakeCollectable(newCFString);
+	NSString *newString = [[(NSString*)newCFString retain] autorelease];
+	CFRelease(newCFString), newCFString = NULL;
+	return newString;
 }
 
 #pragma mark init / dealloc
